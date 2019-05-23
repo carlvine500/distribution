@@ -341,7 +341,23 @@ func (imh *manifestHandler) PutManifest(w http.ResponseWriter, r *http.Request) 
 		imh.Errors = append(imh.Errors, err)
 		return
 	}
+	isRelease := strings.HasSuffix(imh.Tag, "release") || strings.HasSuffix(imh.Tag, "RELEASE")
+	if isRelease {
+		tags := imh.Repository.Tags(imh)
+		desc2, err2 := tags.Get(imh, imh.Tag)
 
+		if err2 != nil  {
+			_,isErrTagUnknown := err2.(distribution.ErrTagUnknown)
+			if !isErrTagUnknown{
+				imh.Errors = append(imh.Errors, v2.ErrorCodeManifestUnknown.WithDetail(err))
+				return
+			}
+		}
+		if desc2.Digest != "" {
+			imh.Errors = append(imh.Errors, v2.ErrorCodeReleaseImageExists.WithDetail("tag end with release/RELEASE already exists"))
+			return
+		}
+	}
 	_, err = manifests.Put(imh, manifest, options...)
 	if err != nil {
 		// TODO(stevvooe): These error handling switches really need to be

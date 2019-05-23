@@ -133,4 +133,11 @@ var (
 		longer proceed.`,
 		HTTPStatusCode: http.StatusNotFound,
 	})
+
+	ErrorCodeReleaseImageExists = errcode.Register(errGroup, errcode.ErrorDescriptor{
+		Value:          "RELEASE_IMAGE_EXISTS",
+		Message:        "image tag end with release/RELEASE already exists",
+		Description:    `image release tag exists.`,
+		HTTPStatusCode: http.StatusBadRequest,
+	})
 )
